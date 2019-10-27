@@ -5,3 +5,9 @@ version := "0.1"
 scalaVersion := "2.13.1"
 
 enablePlugins(com.elarib.PartialSbtPlugin)
+
+initialize ~= { _ =>
+  System.setProperty(
+    "log4j.configurationFile",
+    "./log4j2.xml")
+}

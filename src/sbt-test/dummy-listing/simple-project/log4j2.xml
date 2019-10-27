@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorinterval="30" status="info" strict="true">
+    <Properties>
+        <Property name="filename">logOutput.log</Property>
+    </Properties>
+    <Appenders>
+        <Appender type="Console" name="Console">
+            <Layout type="PatternLayout" pattern="%m%n" />
+        </Appender>
+        <Appender type="File" name="File" fileName="${filename}">
+            <Layout type="PatternLayout" pattern="%m%n" />
+        </Appender>
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="File" />
+            <AppenderRef ref="Console" />
+        </Root>
+    </Loggers>
+</Configuration>

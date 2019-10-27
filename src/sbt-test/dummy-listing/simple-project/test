@@ -1,2 +1,3 @@
 > clean
-> projectID
+> partialCommand
+$ must-mirror ./logOutput.log ./expectedOutput
