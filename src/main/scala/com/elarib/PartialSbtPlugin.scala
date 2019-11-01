@@ -28,12 +28,39 @@ object PartialSbtPlugin extends AutoPlugin {
 
   override def projectSettings: Seq[Def.Setting[_]] =
     Seq(
-      commands += Command("partialCommand")(
-        _ => spaceDelimited("<arg>")
-      )((st, args) => {
-        projectID.value.name
+      commands += Command("metaBuildChangedFiles")(_ => EOF)((st, _) => {
+        val metaBuildChangedFiles =
+          getMetaBuildChangedFiles(DummyChangeGetter)(baseDirectory.value)
+
+        logger.debug(
+          s"${metaBuildChangedFiles.size} meta build files have been changed.")
+
+        metaBuildChangedFiles.foreach { file =>
+          logger.debug(file)
+        }
+        st
+      }),
+      commands += Command("partialCommand")(_ => EOF)((st, _) => {
+        projectID.value
         st
       })
     )
+
+  private def getMetaBuildChangedFiles(changeGetter: ChangeGetter)(
+      baseDir: File): List[File] = {
+
+    lazy val metaBuildFiles: Seq[(File, (File, File) => Boolean)] =
+      PartialSbtConf.metaBuildFiles(baseDir)
+
+    for {
+      fileChanged <- changeGetter.changes.flatMap(_.relativeTo(baseDir))
+      (metaFile, metaFileChecker) <- metaBuildFiles.flatMap {
+        case (metaFile, metaFileChecker) =>
+          metaFile.relativeTo(baseDir).map((_, metaFileChecker))
+      }
+      if metaFileChecker(metaFile, fileChanged)
+    } yield fileChanged
+
+  }
 
 }
