@@ -1,6 +1,0 @@
-> clean
-> partialCommand
-$ must-mirror ./logOutput.log ./partialCommandExpectedOutput
-$ delete ./logOutput.log
-> metaBuildChangedFiles
-$ must-mirror ./logOutput.log ./metaBuildChangedFilesExpecteedOutput
