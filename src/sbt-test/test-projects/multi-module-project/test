@@ -2,24 +2,20 @@
 > addEnvVar log4j.configurationFile ./log4j2.xml
 # 1st test
 > addEnvVar PARTIAL_SBT_LOG_PATH result1.log
-> addEnvVar DUMMY_CHANGE_GETTER_PATH ./changes/1.log
-> changedProjects
+> changedProjects dummyChanges ./changes/1.log
 $ must-mirror ./result1.log ./expected/1.log
 # 2nd test
 > reload
 > addEnvVar PARTIAL_SBT_LOG_PATH result2.log
-> addEnvVar DUMMY_CHANGE_GETTER_PATH ./changes/2.log
-> changedProjects
+> changedProjects dummyChanges ./changes/2.log
 $ must-mirror ./result2.log ./expected/2.log
 # 3rd test
 > reload
 > addEnvVar PARTIAL_SBT_LOG_PATH result3.log
-> addEnvVar DUMMY_CHANGE_GETTER_PATH ./changes/3.log
-> changedProjects
+> changedProjects dummyChanges ./changes/3.log
 $ must-mirror ./result3.log ./expected/3.log
 # 4rd test
 > reload
 > addEnvVar PARTIAL_SBT_LOG_PATH result4.log
-> addEnvVar DUMMY_CHANGE_GETTER_PATH ./changes/4.log
-> changedProjects
+> changedProjects dummyChanges ./changes/4.log
 $ must-mirror ./result4.log ./expected/4.log

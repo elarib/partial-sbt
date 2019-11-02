@@ -1,12 +1,10 @@
 package com.elarib
 
-import com.elarib.model.{ChangeGetter, DummyChangeGetter}
-import sbt.{AutoPlugin, Command, Def}
-import sbt.Keys._
-import sbt._
-import complete.DefaultParsers._
+import com.elarib.model.{ChangeGetter, PartialSbParser}
 import org.apache.logging.log4j.LogManager
+import sbt.Keys._
 import sbt.internal.BuildDependencies.DependencyMap
+import sbt.{AutoPlugin, Command, Def, _}
 
 object PartialSbtPlugin extends AutoPlugin {
 
@@ -30,10 +28,10 @@ object PartialSbtPlugin extends AutoPlugin {
 
   override def projectSettings: Seq[Def.Setting[_]] =
     Seq(
-      commands += Command("metaBuildChangedFiles")(_ => EOF)((st, _) => {
+      commands += Command("metaBuildChangedFiles")(_ =>
+        PartialSbParser.changeGetterParseer)((st, changeGetter) => {
         val metaBuildChangedFiles =
-          getMetaBuildChangedFiles(DummyChangeGetter("./changes"))(
-            baseDirectory.value)
+          getMetaBuildChangedFiles(changeGetter)(baseDirectory.value)
 
         logger.debug(
           s"${metaBuildChangedFiles.size} meta build files have been changed.")
@@ -43,9 +41,10 @@ object PartialSbtPlugin extends AutoPlugin {
         }
         st
       }),
-      commands += Command("changedProjects")(_ => EOF)((st, _) => {
+      commands += Command("changedProjects")(_ =>
+        PartialSbParser.changeGetterParseer)((st, changeGetter) => {
         val changedProjects: Seq[ResolvedProject] =
-          findChangedModules(DummyChangeGetter("./changes"))(
+          findChangedModules(changeGetter)(
             baseDirectory.value,
             loadedBuild.value.allProjectRefs,
             buildDependencies.value.classpathTransitive)

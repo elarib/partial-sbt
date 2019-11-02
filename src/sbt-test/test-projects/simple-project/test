@@ -1,5 +1,4 @@
 > clean
 > addEnvVar log4j.configurationFile ./log4j2.xml
-> addEnvVar DUMMY_CHANGE_GETTER_PATH ./changes
-> metaBuildChangedFiles
+> metaBuildChangedFiles dummyChanges ./changes
 $ must-mirror result.log metaBuildChangedFilesExpectedOutput
