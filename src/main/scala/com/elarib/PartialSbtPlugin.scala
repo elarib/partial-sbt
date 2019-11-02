@@ -66,45 +66,58 @@ object PartialSbtPlugin extends AutoPlugin {
 
     val projectMap: Map[ProjectRef, ResolvedProject] = allProjectRefs.toMap
 
-    val reverseDependencyMap: DependencyMap[ResolvedProject] = buildDeps
-      .foldLeft[DependencyMap[ResolvedProject]](Map.empty) {
-        (acc, dependency) =>
-          val (ref, dependsOnList) = dependency
+    getMetaBuildChangedFiles(changeGetter)(baseDir) match {
+      case _ :: _ =>
+        logger.debug(
+          s"Metabuild files have changed. Need to reload all the ${projectMap.size} projects")
+        projectMap
+          .map(_._2)
+          .toSeq
+          .sortBy(_.id)
+      case Nil =>
+        val reverseDependencyMap: DependencyMap[ResolvedProject] = buildDeps
+          .foldLeft[DependencyMap[ResolvedProject]](Map.empty) {
+            (acc, dependency) =>
+              val (ref, dependsOnList) = dependency
 
-          dependsOnList.foldLeft(acc) { (dependencyMap, key) =>
-            val resolvedProjects = dependencyMap.getOrElse(key, Nil)
-            val newValue: Seq[ResolvedProject] =
-              projectMap.get(ref).fold(resolvedProjects)(_ +: resolvedProjects)
-            dependencyMap + (key -> newValue)
+              dependsOnList.foldLeft(acc) { (dependencyMap, key) =>
+                val resolvedProjects = dependencyMap.getOrElse(key, Nil)
+                val newValue: Seq[ResolvedProject] =
+                  projectMap
+                    .get(ref)
+                    .fold(resolvedProjects)(_ +: resolvedProjects)
+                dependencyMap + (key -> newValue)
+              }
+
           }
 
-      }
+        val modulesWithPath: Seq[(ProjectRef, ResolvedProject)] =
+          allProjectRefs.filter(_._2.base != baseDir)
 
-    val modulesWithPath: Seq[(ProjectRef, ResolvedProject)] =
-      allProjectRefs.filter(_._2.base != baseDir)
+        val diffsFiles: Seq[sbt.File] = changeGetter.changes
 
-    val diffsFiles: Seq[sbt.File] = changeGetter.changes
+        val modulesToBuild: Seq[ResolvedProject] = modulesWithPath
+          .filter {
+            case (_, resolvedProject) =>
+              !diffsFiles
+                .filter(file =>
+                  file.getAbsolutePath.contains(
+                    resolvedProject.base.getAbsolutePath))
+                .isEmpty
+          }
+          .flatMap {
+            case (projectRef, resolvedProject) =>
+              reverseDependencyMap
+                .get(projectRef)
+                .map(_ :+ resolvedProject)
+                .getOrElse(Seq(resolvedProject))
+          }
+          .distinct
+          .sortBy(_.id)
 
-    val modulesToBuild: Seq[ResolvedProject] = modulesWithPath
-      .filter {
-        case (_, resolvedProject) =>
-          !diffsFiles
-            .filter(file =>
-              file.getAbsolutePath.contains(
-                resolvedProject.base.getAbsolutePath))
-            .isEmpty
-      }
-      .flatMap {
-        case (projectRef, resolvedProject) =>
-          reverseDependencyMap
-            .get(projectRef)
-            .map(_ :+ resolvedProject)
-            .getOrElse(Seq(resolvedProject))
-      }
-      .distinct
-      .sortBy(_.id)
+        modulesToBuild
+    }
 
-    modulesToBuild
   }
 
   private def getMetaBuildChangedFiles(changeGetter: ChangeGetter)(
