@@ -10,6 +10,7 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser
 
 import scala.collection.JavaConverters._
 import scala.io.Source
+import scala.util.{Failure, Success, Try}
 
 sealed trait ChangeGetter {
   def changes: List[File]
@@ -69,39 +70,43 @@ object GitChangeGetterHelper {
   }
 
   private def getBranchRefTree(branchName: String) = {
-    val head = repository.exactRef(s"refs/heads/$branchName")
-    try {
+    Try {
+      val head = repository.exactRef(s"refs/heads/$branchName")
       val walk = new RevWalk(repository)
-      try {
-        val commit = walk.parseCommit(head.getObjectId)
-        val tree = walk.parseTree(commit.getTree.getId)
-        val treeParser = new CanonicalTreeParser
-        try {
-          val reader = repository.newObjectReader
-          try treeParser.reset(reader, tree.getId)
-          finally if (reader != null) reader.close()
-        }
-        walk.dispose
+      val commit = walk.parseCommit(head.getObjectId)
+      val tree = walk.parseTree(commit.getTree.getId)
+      val treeParser = new CanonicalTreeParser
+      val reader = repository.newObjectReader
+      Try {
+        treeParser.reset(reader, tree.getId)
+      }.map(_ => reader.close())
+      walk.dispose
+      (walk, treeParser)
+    } match {
+      case Failure(exception) => throw exception
+      case Success((walk, treeParser)) =>
+        walk.close()
         treeParser
-      } finally if (walk != null) walk.close()
     }
   }
 
   private def getCommitRefTree(commitId: String) = {
-    try {
+    Try {
       val walk = new RevWalk(repository)
-      try {
-        val commit = walk.parseCommit(ObjectId.fromString(commitId))
-        val tree = walk.parseTree(commit.getTree.getId)
-        val treeParser = new CanonicalTreeParser
-        try {
-          val reader = repository.newObjectReader
-          try treeParser.reset(reader, tree.getId)
-          finally if (reader != null) reader.close()
-        }
-        walk.dispose
+      val commit = walk.parseCommit(ObjectId.fromString(commitId))
+      val tree = walk.parseTree(commit.getTree.getId)
+      val treeParser = new CanonicalTreeParser
+      val reader = repository.newObjectReader
+      Try {
+        treeParser.reset(reader, tree.getId)
+      }.map(_ => reader.close())
+      walk.dispose
+      (walk, treeParser)
+    } match {
+      case Failure(exception) => throw exception
+      case Success((walk, treeParser)) =>
+        walk.close()
         treeParser
-      } finally if (walk != null) walk.close()
     }
   }
 
