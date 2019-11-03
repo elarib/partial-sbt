@@ -1,8 +1,4 @@
-sudo: false
-
 language: scala
-
-dist: xenial
 
 matrix:
   include:
@@ -11,4 +7,4 @@ matrix:
       scala: 2.12.4
 
 script:
-  - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M ++$TRAVIS_SCALA_VERSION "^^${SBT_VERSION}" test scripted
+  - sbt "^^ $SBT_VERSION" clean test scripted
