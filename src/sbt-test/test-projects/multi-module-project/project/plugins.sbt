@@ -1,3 +1,5 @@
-lazy val root = (project in file(".")).dependsOn(partialSbtPlugin)
-
-lazy val partialSbtPlugin = RootProject(uri("file:///Users/elarib/IdeaProjects/partial-sbt"))
+val pluginVersion = System.getProperty("plugin.version")
+if(pluginVersion == null)
+  throw new RuntimeException("""|The system property 'plugin.version' is not defined.
+                                |Specify this property using the scriptedLaunchOpts -D.""".stripMargin)
+else addSbtPlugin("com.elarib" % "partial-sbt" % pluginVersion)

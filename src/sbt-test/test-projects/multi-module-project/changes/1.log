@@ -1,0 +1,4 @@
+src/services/service-1/build.sbt
+src/services/service-2/build.sbt
+src/services/service-3/build.sbt
+src/services/service-4/build.sbt

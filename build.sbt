@@ -11,6 +11,5 @@ lazy val root = (project in file("."))
     scriptedBufferLog := false,
     libraryDependencies ++= Seq(
       "org.eclipse.jgit" % "org.eclipse.jgit" % "5.5.1.201910021850-r"
-
     )
   )
