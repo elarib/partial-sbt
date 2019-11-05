@@ -1,13 +1,22 @@
-[![Build Status](https://travis-ci.com/elarib/partial-sbt.svg?branch=master)](https://travis-ci.com/elarib/partial-sbt)
+[![Build Status](https://travis-ci.com/elarib/partial-sbt.svg?branch=master)](https://travis-ci.com/elarib/partial-sbt) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.elarib/partial-sbt/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.elarib/partial-sbt)
 
 Partial-sbt
 ============
 
 The goal is simple: Apply some sbt tasks/commands on only the modules/sub-modules changed between two git commits or two git branches, including their reverse dependencies.
 
+The main purpose behind, is to reduce build, test & integration test times. 
+
 For example: 
+
  - Test and deploy only modules (and their reverse dependencies) that have been changed between develop branch and feature x branch
  - Package only modules (and their reverse dependencies) that have been changed between two git commits.
+ 
+Project example:
+
+ - Check out : https://github.com/elarib/partial-sbt/blob/master/src/sbt-test/test-projects/multi-module-project/build.sbt 
+ - Change scenarios : https://github.com/elarib/partial-sbt/tree/master/src/sbt-test/test-projects/multi-module-project/changes
+ - Expected output of each change : https://github.com/elarib/partial-sbt/tree/master/src/sbt-test/test-projects/multi-module-project/expected 
 
 Requirements
 ------------
@@ -20,12 +29,12 @@ Setup
 
 ### Using Published Plugin
 
-⚠️ Not published yet
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.elarib/partial-sbt/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.elarib/partial-sbt)
 
 Add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.elarib" % "partial-sbt" % "x.y.z")
+addSbtPlugin("com.elarib" % "partial-sbt" % "0.1")
 ```
 
 Usage
