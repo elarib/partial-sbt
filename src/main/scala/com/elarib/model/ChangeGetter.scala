@@ -1,8 +1,8 @@
 package com.elarib.model
 
 import java.io.File
-
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.diff.DiffEntry
 import org.eclipse.jgit.lib.ObjectId
 import org.eclipse.jgit.revwalk.RevWalk
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
@@ -64,7 +64,9 @@ object GitChangeGetterHelper {
       .call()
       .asScala
       .map { diffEntry =>
-        new File(diffEntry.getNewPath)
+        val path = if (diffEntry.getNewPath == DiffEntry.DEV_NULL)
+          diffEntry.getOldPath else diffEntry.getNewPath
+        new File(path)
       }
       .toList
   }
@@ -119,7 +121,7 @@ case class DummyChangeGetter(logFilePath: String) extends ChangeGetter {
       .fromFile(new File(logFilePath))
       .getLines()
       .map {
-        case line if !line.isEmpty => new File(line)
+        case line if line.nonEmpty => new File(line)
       }
       .toList
 }
