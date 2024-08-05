@@ -96,6 +96,7 @@ lazy val thirdTool = sbt
   .Project("tool-3", service / "tool-3")
   .dependsOn(firstLib, secondLib)
   .settings(settings("tool-3"))
+  .settings(com.elarib.BuildKeys.partialSbtExcludedProject := ())
 
 //services
 lazy val firstService = sbt

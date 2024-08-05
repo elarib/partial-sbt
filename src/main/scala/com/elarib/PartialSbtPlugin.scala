@@ -2,12 +2,13 @@ package com.elarib
 
 import com.elarib.model.{ChangeGetter, PartialSbParser}
 import org.apache.logging.log4j.LogManager
-import sbt.Keys._
+import sbt.*
+import sbt.Keys.*
 import sbt.internal.BuildDependencies.DependencyMap
-import sbt._
 
 object BuildKeys {
   val partialSbtExcludedFiles = sbt.settingKey[Seq[sbt.File]]("Files that should be excluded from analysis.")
+  val partialSbtExcludedProject: SettingKey[Unit] = sbt.settingKey[Unit]("Exclude project from analysis.")
 }
 
 object PartialSbtPlugin extends AutoPlugin {
@@ -50,6 +51,7 @@ object PartialSbtPlugin extends AutoPlugin {
         st
       }),
       commands += Command("changedProjects")(_ => PartialSbParser.changeGetterParser)((st, changeGetter) => {
+
         val changedProjects: Seq[ResolvedProject] =
           findChangedModules(changeGetter)(
             baseDirectory.value,
@@ -104,7 +106,9 @@ object PartialSbtPlugin extends AutoPlugin {
 
         val modulesToBuild: Seq[ResolvedProject] = modulesWithPath
           .filter { case (_, resolvedProject) =>
-            diffsFiles.exists(file => file.getAbsolutePath.contains(resolvedProject.base.getAbsolutePath))
+            val projectIsIncludedInAnalysis = !resolvedProject.settings.exists(_.key.key == BuildKeys.partialSbtExcludedProject.key)
+            val projectFilesWereChanged = diffsFiles.exists(file => file.getAbsolutePath.contains(resolvedProject.base.getAbsolutePath))
+            projectIsIncludedInAnalysis && projectFilesWereChanged
           }
           .flatMap { case (projectRef, resolvedProject) =>
             reverseDependencyMap
